@@ -1,0 +1,139 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Ekskluzywne i ultra-szybkie portfolio fotograficzne z możliwością bezpiecznego uploadowania zdjęć.">
+    <title>Ekskluzywne Studio i Galeria</title>
+    <!-- Łączenie z wyczyszczonym i pięknym plikiem stylów zewnętrznych -->1112212222122222assasdada121 ho1  z tr z zzzz        aaaaassssssssss
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+    <!-- INTERFEJS: BLUR-HEADER & NAWIGACJA ONE-PAGE -->
+    <header class="header">
+        <nav class="nav-container" aria-label="Nawigacja główna witryny">
+            <a href="#" class="logo">STUDIO.io</a>
+
+            <button class="hamburger" id="hamburger-btn" aria-expanded="false" aria-controls="nav-menu" aria-label="Rozwiń mobilne menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="#start" class="nav-link">Studio</a></li>
+                <li><a href="#upload" class="nav-link">Prześlij plik</a></li>
+                <li><a href="#standardy" class="nav-link">Technologia</a></li>
+                <li><a href="#ekspozycja" class="nav-link">Galeria</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- SEMANTYCZNY GŁÓWNY RDZEŃ STRONY -->
+    <main>
+
+        <!-- SEC 1: HERO STUDIO -->
+        <section id="start" class="section hero">
+            <h1>Zapisuj wspomnienia w najwyższej jakości</h1>
+            <p>Bezpieczna, zoptymalizowana przestrzeń chmurowa dbająca o najdrobniejsze detale Twojej fotografii.</p>
+        </section>
+
+        <!-- SEC 2: SEKCJA UPLOADOWANIA (MODERNY FORMULARZ DRAG & DROP) -->
+        <section id="upload" class="section">
+            <div class="form-card">
+                <h2>Dodaj nowe dzieło do kolekcji</h2>
+                <!-- Bezpieczne przesyłanie plików (multipart/form-data) z ochroną CSRF -->
+                <form method="POST" enctype="multipart/form-data" class="django-form">
+                    {% csrf_token %}
+
+                    <!-- Django renderuje etykietę i pole wstrzykiwane przez formularz w widoku -->
+                    {{ form.as_p }}
+
+                    <button type="submit" class="btn-submit">Udostępnij w galerii</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- SEC 3: UKŁAD TRZECH KOLUMN (PROFIL TECHNICZNY STRONY) -->
+        <section id="standardy" class="section">
+            <h2>Architektura i standardy</h2>
+            <div class="features-grid">
+                <article class="feature-card">
+                    <h3>
+                        <span>⚡</span> Wydajność Core
+                    </h3>
+                    <p>Dzięki zastosowaniu strategii asynchronicznego ładowania oraz braku zbędnych frameworków JS strona błyskawicznie reaguje na interakcję.</p>
+                </article>
+
+                <article class="feature-card">
+                    <h3>
+                        <span>👁️</span> Pełna Dostępność
+                    </h3>
+                    <p>Zapewniony wysoki współczynnik kontrastu tekstu do tła gwarantuje czytelność osobom niedowidzącym, zgodnie z wymogami WCAG AA.</p>
+                </article>
+
+                <article class="feature-card">
+                    <h3>
+                        <span>⚙️</span> Kompresja w locie
+                    </h3>
+                    <p>Silnik Django współpracując z Pillow automatycznie redukuje wagę plików, zachowując bezstratne walory kompozycyjne grafiki.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- SEC 4: PRO GALERIA (SIATKA MULTIMEDIALNA) -->
+        <section id="ekspozycja" class="section">
+            <h2>Kolekcja fotografii</h2>
+            <div class="galeria-grid">
+                {% for item in zdjecia %}
+                <article class="zdjecie-item">
+                    <div class="zdjecie-wrapper">
+                        <!-- Stałe wymiary zapobiegają ucinaniu i skakaniu ekranu (CLS = 0 w Lighthouse) -->
+                        <img src="{{ item.zdjecie.url }}" alt="Fotografia zatytułowana: {{ item.tytul }}" width="600" height="380" loading="lazy">
+                    </div>
+                    <div class="zdjecie-info">
+                        <h3>{{ item.tytul }}</h3>
+                    </div>
+                </article>
+                {% empty %}
+                <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem 0;">Twoje studio jest obecnie puste. Wgraj pierwsze zdjęcie za pomocą formularza.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+    </main>
+
+    <!-- SEMANTYCZNA STOPKA -->
+    <footer class="footer">
+        <p>&copy; Moja strona </p>
+    </footer>
+
+    <!-- INTERAKCJE JS DLA MENU MOBILNEGO -->
+    <script>
+        const hamburger = document.getElementById('hamburger-btn');
+        const menu = document.getElementById('nav-menu');
+        const links = document.querySelectorAll('.nav-link');
+
+        function toggleMenu() {
+            const isExpanded = hamburger.getAttribute('aria-expanded') === 'true';
+            hamburger.setAttribute('aria-expanded', !isExpanded);
+            menu.classList.toggle('active');
+        }
+
+        hamburger.addEventListener('click', toggleMenu);
+
+        // Zamknięcie menu po kliknięciu w link dla płynnego efektu one-page scrolla
+        links.forEach(link => {
+            link.addEventListener('click', () => {
+                if(menu.classList.contains('active')) {
+                    hamburger.setAttribute('aria-expanded', 'false');
+                    menu.classList.remove('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>
+
