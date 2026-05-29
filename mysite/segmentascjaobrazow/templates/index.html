@@ -1,0 +1,147 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platforma do przesyłania zdjęć</title>
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+</head>
+<body>
+
+    <!-- INTERFEJS: BLUR-HEADER -->
+    <header class="header">
+        <nav class="nav-container" aria-label="Nawigacja główna">
+            <a href="#" class="logo">Platforma.io</a>
+            <ul class="nav-menu" id="nav-menu">
+                <li><a href="#start" class="nav-link">Platforma</a></li>
+                <li><a href="#upload" class="nav-link">Panel Zdjęć</a></li>
+                <li><a href="#standardy" class="nav-link">Technologia</a></li>
+                <li><a href="#ekspozycja" class="nav-link">Galeria zdjęć</a></li>
+                {% if user.is_authenticated %}
+                    <li>
+                        <form action="{% url 'logout' %}" method="POST" style="display: inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="nav-link" style="background: none; border: none; cursor: pointer; opacity: 0.7; font: inherit;">
+                                Wyloguj ({{ user.username }})
+                            </button>
+                        </form>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+
+        <!-- SEC 1: HERO STUDIO -->
+        <section id="start" class="section hero">
+            <h1>Analiza Parazytologiczna</h1>
+            <p>Bezpieczna platforma do przesyłania zdjęć pasożytniczych</p>
+
+            <!-- Dynamiczny komunikat stanu logowania żądany przez użytkownika -->
+            <div style="margin-top: 2rem; padding: 1rem; border-radius: 8px; display: inline-block; font-weight: bold;
+                        {% if user.is_authenticated %} background: #d1e7dd; color: #0f5132; {% else %} background: #f8d7da; color: #842029; {% endif %}">
+                {% if user.is_authenticated %}
+                    🟢 Jesteś poprawnie zalogowany jako: {{ user.username }}
+                {% else %}
+                    🔴 Stan: Niezalogowany (Zaloguj się poniżej, aby odblokować system)
+                {% endif %}
+            </div>
+        </section>
+
+        <!-- DYNAMICZNY PANEL: LOGOWANIE LUB UPLOAD -->
+        <section id="upload" class="section">
+            <div class="form-card">
+
+                {% if not user.is_authenticated %}
+                    <!-- BLOK DLA NIEZALOGOWANEGO -->
+                    <h2>Zaloguj się do platformy</h2>
+                    <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Zaloguj się, aby uzyskać dostęp do pola wyboru pliku.</p>
+
+                    <form method="POST" class="django-form">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="id_username">Nazwa użytkownika:</label>
+                            <input type="text" name="username" required id="id_username">
+                        </div>
+                        <div class="form-group">
+                            <label for="id_password">Hasło:</label>
+                            <input type="password" name="password" required id="id_password">
+                        </div>
+                        <button type="submit" class="btn-submit">Zaloguj się</button>
+                    </form>
+
+                {% else %}
+                    <!-- BLOK DLA ZALOGOWANEGO (POJAWIA SIĘ PO ZALOGOWANIU) -->
+                    <h2>Dodaj nowe zdjęcie do systemu</h2>
+                    <p style="margin-bottom: 1.5rem; color: #0f5132; font-weight: 500;">Dostęp przyznany. Wybierz plik graficzny z dysku:</p>
+
+                    <form method="POST" enctype="multipart/form-data" class="django-form">
+                        {% csrf_token %}
+
+                        <!-- Wstrzykiwanie pola przez Django (tutaj pojawi się <input type="file">) -->
+                        <div style="margin: 1.5rem 0; background: var(--bg-main); padding: 1rem; border-radius: 8px; border: 1px dashed var(--accent);">
+                            {{ form.as_p }}
+                        </div>
+
+                        <button type="submit" class="btn-submit">Wgraj zdjęcie do bazy danych</button>
+                    </form>
+                {% endif %}
+
+            </div>
+        </section>
+
+        <!-- SEC 3: TECHNOLOGIA -->
+        <section id="standardy" class="section">
+            <h2>Architektura rozwiązania</h2>
+            <div class="features-grid">
+                <article class="feature-card">
+                    <h3><span>⚡</span> Wydajność modeli AI</h3>
+                    <p>Dzięki zastosowaniu odpowiednich modeli jesteśmy w stanie dosyć szybko wykonać segmentację</p>
+                </article>
+                <article class="feature-card">
+                    <h3><span>👁️</span> Pełna Dostępność</h3>
+                    <p>Użytkownik przesyła swoje zdjęcie z jajem pasożyta i dochodzi do kompleksowej analizy</p>
+                </article>
+                <article class="feature-card">
+                    <h3><span>⚙️</span> Kompresja w locie</h3>
+                    <p>Silnik Django współpracując z Pillow automatycznie redukuje wagę plików.</p>
+                </article>
+            </div>
+        </section>
+
+        <!-- SEC 4: GALERIA -->
+        <section id="ekspozycja" class="section">
+            <h2>Kolekcja Zdjęć w Bazie</h2>
+            <div class="galeria-grid">
+                {% for item in zdjecia %}
+                <article class="zdjecie-item">
+                    <div class="zdjecie-wrapper">
+                        <img src="{{ item.photo.url }}" alt="Zdjęcie: {{ item.file_name }}" width="600" height="380" loading="lazy">
+                    </div>
+                    <div class="zdjecie-info">
+                        <h3>{{ item.file_name }}</h3>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">
+                            Format: <strong>{{ item.file_type }}</strong> |
+                            Dodano: {{ item.uploaded_at|date:"Y-m-d H:i" }}
+                        </p>
+                    </div>
+                </article>
+                {% empty %}
+                <p style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 3rem 0;">Baza danych jest obecnie pusta. Wgraj pierwszy plik graficzny.</p>
+                {% endfor %}
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>&copy; Moja strona </p>
+    </footer>
+
+    <script src="{% static 'js/script.js' %}"></script>
+</body>
+</html>
+
+
